@@ -8,16 +8,10 @@ app = Flask(__name__)
 model = pickle.load(open(os.path.join("model", "url_model.pkl"), "rb"))
 vectorizer = pickle.load(open(os.path.join("model", "vectorizer.pkl"), "rb"))
 
-# Trusted domains list
+# Trusted domains
 trusted_domains = [
-    "google.com",
-    "youtube.com",
-    "facebook.com",
-    "amazon.com",
-    "wikipedia.org",
-    "twitter.com",
-    "instagram.com",
-    "linkedin.com"
+    "google.com", "youtube.com", "facebook.com",
+    "amazon.com", "wikipedia.org"
 ]
 
 @app.route("/")
@@ -28,7 +22,7 @@ def home():
 def predict():
     url = request.form["url"].lower()
 
-    # 🔹 STEP 1: Trusted domain check
+    # ✅ Rule 1: Trusted domains
     for domain in trusted_domains:
         if domain in url:
             return render_template(
@@ -36,11 +30,23 @@ def predict():
                 prediction_text="✅ Safe Website (Trusted Domain)"
             )
 
-    # 🔹 STEP 2: ML Prediction
+    # ✅ Rule 2: Suspicious checks
+    if len(url) > 75:
+        return render_template(
+            "index.html",
+            prediction_text="⚠️ Suspicious (Very Long URL)"
+        )
+
+    if "@" in url:
+        return render_template(
+            "index.html",
+            prediction_text="⚠️ Suspicious (Contains @)"
+        )
+
+    # ✅ ML Prediction
     data = vectorizer.transform([url])
     prediction = model.predict(data)[0]
 
-    # 🔹 STEP 3: Result
     if prediction == 1:
         result = "⚠️ Phishing Website"
     else:
@@ -51,10 +57,3 @@ def predict():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
-LogisticRegression(max_iter=1000, class_weight='balanced')
-
-if len(url) > 75:
-    return "⚠️ Suspicious (Very Long URL)"
-
-if "@" in url:
-    return "⚠️ Suspicious (Contains @)"
