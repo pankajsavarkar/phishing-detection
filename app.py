@@ -6,21 +6,21 @@ import re
 app = Flask(__name__)
 
 # =========================
-# Load model
+# Load Model
 # =========================
 model = pickle.load(open(os.path.join("model", "url_model.pkl"), "rb"))
 vectorizer = pickle.load(open(os.path.join("model", "vectorizer.pkl"), "rb"))
 
 # =========================
-# History (last 10 results)
+# Temporary History
 # =========================
 history = []
 
 # =========================
-# 100+ Trusted Domains
+# Trusted Domains (use your full 100+ list if needed)
 # =========================
 trusted_domains = [
-"google.com","youtube.com","facebook.com","amazon.com","wikipedia.org","twitter.com",
+  "google.com","youtube.com","facebook.com","amazon.com","wikipedia.org","twitter.com",
 "instagram.com","linkedin.com","microsoft.com","apple.com","github.com","stackoverflow.com",
 "netflix.com","yahoo.com","bing.com","reddit.com","whatsapp.com","telegram.org","zoom.us",
 "office.com","live.com","outlook.com","dropbox.com","adobe.com","canva.com","spotify.com",
@@ -40,7 +40,7 @@ trusted_domains = [
 ]
 
 # =========================
-# URL validation
+# URL Validation
 # =========================
 def is_valid_url(url):
     pattern = re.compile(
@@ -51,7 +51,7 @@ def is_valid_url(url):
     return re.match(pattern, url)
 
 # =========================
-# Risk scoring
+# Risk Calculation
 # =========================
 def calculate_risk(url):
     score = 0
@@ -63,15 +63,15 @@ def calculate_risk(url):
         score += 1
     if url.count('.') > 3:
         score += 2
-    if "https" not in url:
-        score += 1
     return score
 
 # =========================
-# Home
+# Home (Reset history)
 # =========================
 @app.route("/")
 def home():
+    global history
+    history = []
     return render_template("index.html", history=history)
 
 # =========================
@@ -85,7 +85,6 @@ def predict():
 
     url = request.form["url"].strip().lower()
 
-    # 🔴 Validation
     if not is_valid_url(url):
         result = "❌ Invalid URL"
         confidence = ""
@@ -93,20 +92,16 @@ def predict():
         if not url.startswith("http"):
             url = "http://" + url
 
-        # 🟢 Trusted
         if any(domain in url for domain in trusted_domains):
-            result = "✅ Safe (Trusted Source)"
+            result = "✅ Safe (Trusted)"
             confidence = "100%"
-
         else:
-            # 🟡 Rule check
             risk = calculate_risk(url)
 
             if risk >= 5:
-                result = "⚠️ High Risk Suspicious Website"
+                result = "⚠️ Suspicious Website"
                 confidence = "85%"
             else:
-                # 🔵 ML Prediction
                 data = vectorizer.transform([url])
                 prediction = model.predict(data)[0]
                 prob = model.predict_proba(data)[0]
@@ -118,7 +113,7 @@ def predict():
                 else:
                     result = "✅ Safe Website"
 
-    # 🧠 Save history
+    # Save history
     history.insert(0, {
         "url": url,
         "result": result,
@@ -138,17 +133,5 @@ def predict():
 # =========================
 # Run
 # =========================
-@app.route("/dashboard")
-def dashboard():
-    safe_count = sum(1 for item in history if "Safe" in item["result"])
-    phishing_count = sum(1 for item in history if "Phishing" in item["result"])
-    suspicious_count = sum(1 for item in history if "Risk" in item["result"])
-
-    return render_template(
-        "dashboard.html",
-        safe=safe_count,
-        phishing=phishing_count,
-        suspicious=suspicious_count
-    )
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)

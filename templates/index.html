@@ -1,42 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Phishing Detection</title>
+    <title>Phishing Detection</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
 
     <style>
         body {
             margin: 0;
-            overflow-x: hidden;
             font-family: 'Orbitron', sans-serif;
-            background: black;
+            background: url("/static/cs3.jpg") no-repeat center center fixed;
+            background-size: cover;
             color: #00ffcc;
             text-align: center;
         }
 
-        /* MATRIX RAIN */
-        canvas {
+        /* Dark overlay */
+        body::before {
+            content: "";
             position: fixed;
-            top: 0;
-            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
             z-index: -1;
         }
 
         .container {
             margin-top: 80px;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0,0,0,0.75);
             padding: 40px;
             border-radius: 15px;
             width: 60%;
             margin-left: auto;
             margin-right: auto;
-            box-shadow: 0px 0px 25px #00ffcc;
-            animation: fadeIn 1.5s ease-in-out;
+            box-shadow: 0px 0px 20px #00ffcc;
+            animation: fadeIn 1.2s ease-in-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(40px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -54,49 +56,34 @@
             padding: 12px;
             border-radius: 8px;
             border: none;
-            outline: none;
             background: black;
             color: #00ffcc;
             border: 1px solid #00ffcc;
         }
 
         input:focus {
-            box-shadow: 0 0 15px #00ffcc;
+            box-shadow: 0 0 10px #00ffcc;
         }
 
         button {
             padding: 12px 25px;
             margin-top: 15px;
-            background: transparent;
-            border: 1px solid #00ffcc;
-            color: #00ffcc;
+            background: #00ffcc;
+            border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-weight: bold;
             transition: 0.3s;
         }
 
         button:hover {
-            background: #00ffcc;
-            color: black;
-            box-shadow: 0 0 15px #00ffcc;
+            background: #00ccaa;
+            transform: scale(1.05);
         }
 
-        .typing {
-            font-family: 'Share Tech Mono', monospace;
-            overflow: hidden;
-            white-space: nowrap;
-            border-right: 2px solid #00ffcc;
-            width: 0;
-            animation: typing 2s steps(40, end) forwards, blink 0.7s infinite;
-        }
-
-        @keyframes typing {
-            from { width: 0 }
-            to { width: 100% }
-        }
-
-        @keyframes blink {
-            50% { border-color: transparent }
+        .result {
+            margin-top: 20px;
+            animation: fadeIn 1s ease-in-out;
         }
 
         table {
@@ -104,6 +91,7 @@
             width: 90%;
             margin-top: 20px;
             border-collapse: collapse;
+            animation: fadeIn 1.5s;
         }
 
         th, td {
@@ -112,7 +100,7 @@
         }
 
         th {
-            background: #001a1a;
+            background: #003333;
         }
 
         tr:hover {
@@ -124,42 +112,34 @@
             bottom: 10px;
             right: 15px;
             color: white;
-            font-size: 14px;
         }
     </style>
 </head>
 
 <body>
 
-<canvas id="matrix"></canvas>
-
 <div class="container">
-    <h1>⚡ AI Phishing Detection System</h1>
+    <h1>🔐 Phishing Detection System</h1>
 
     <form action="/predict" method="POST">
-        <input type="text" name="url" placeholder="Enter target URL..." required>
+        <input type="text" name="url" placeholder="Enter website URL..." required>
         <br>
-        <button type="submit">Analyze</button>
+        <button type="submit">Check</button>
     </form>
 
-    <div>
-        <h3 class="typing">{{ prediction_text }}</h3>
-        <h4>Confidence: {{ confidence }}</h4>
+    <div class="result">
+        <h3>{{ prediction_text }}</h3>
+        <h4>{{ confidence }}</h4>
     </div>
-
-    <br>
-    <a href="/dashboard">
-        <button>📊 Dashboard</button>
-    </a>
 
     <hr>
 
-    <h2>📜 Scan Logs</h2>
+    <h2>📜 Scan History</h2>
 
     <table>
         <tr>
             <th>URL</th>
-            <th>Status</th>
+            <th>Result</th>
             <th>Confidence</th>
         </tr>
 
@@ -174,45 +154,8 @@
 </div>
 
 <div class="footer">
-     Pankaj S
+    Developed by Pankaj Savarkar
 </div>
-
-<script>
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-
-const letters = "01";
-const fontSize = 14;
-const columns = canvas.width / fontSize;
-
-const drops = [];
-
-for(let x = 0; x < columns; x++)
-    drops[x] = 1;
-
-function draw() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "#00ffcc";
-    ctx.font = fontSize + "px monospace";
-
-    for(let i = 0; i < drops.length; i++) {
-        const text = letters[Math.floor(Math.random() * letters.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-        if(drops[i] * fontSize > canvas.height && Math.random() > 0.975)
-            drops[i] = 0;
-
-        drops[i]++;
-    }
-}
-
-setInterval(draw, 33);
-</script>
 
 </body>
 </html>
