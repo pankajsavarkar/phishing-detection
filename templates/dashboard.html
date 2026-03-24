@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #0f2027;
+            color: #00ffcc;
+            font-family: Arial;
+            text-align: center;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        canvas {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        a {
+            color: cyan;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>📊 Detection Dashboard</h1>
+
+    <canvas id="myChart"></canvas>
+
+    <br><br>
+    <a href="/">⬅ Back to Home</a>
+</div>
+
+<script>
+const ctx = document.getElementById('myChart');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Safe', 'Phishing', 'Suspicious'],
+        datasets: [{
+            label: 'Detection Results',
+            data: [{{ safe }}, {{ phishing }}, {{ suspicious }}]
+        }]
+    }
+});
+</script>
+
+</body>
+</html>
