@@ -5,22 +5,16 @@ import re
 
 app = Flask(__name__)
 
-# =========================
-# Load Model
-# =========================
+# Load model
 model = pickle.load(open(os.path.join("model", "url_model.pkl"), "rb"))
 vectorizer = pickle.load(open(os.path.join("model", "vectorizer.pkl"), "rb"))
 
-# =========================
-# Temporary History
-# =========================
+# History
 history = []
 
-# =========================
-# Trusted Domains (use your full 100+ list if needed)
-# =========================
+# 100+ Trusted Domains
 trusted_domains = [
-  "google.com","youtube.com","facebook.com","amazon.com","wikipedia.org","twitter.com",
+"google.com","youtube.com","facebook.com","amazon.com","wikipedia.org","twitter.com",
 "instagram.com","linkedin.com","microsoft.com","apple.com","github.com","stackoverflow.com",
 "netflix.com","yahoo.com","bing.com","reddit.com","whatsapp.com","telegram.org","zoom.us",
 "office.com","live.com","outlook.com","dropbox.com","adobe.com","canva.com","spotify.com",
@@ -39,9 +33,7 @@ trusted_domains = [
 "samsung.com","xiaomi.com","oneplus.com","oppo.com","vivo.com"
 ]
 
-# =========================
-# URL Validation
-# =========================
+# URL validation
 def is_valid_url(url):
     pattern = re.compile(
         r'^(https?:\/\/)?'
@@ -50,9 +42,7 @@ def is_valid_url(url):
     )
     return re.match(pattern, url)
 
-# =========================
-# Risk Calculation
-# =========================
+# Risk scoring
 def calculate_risk(url):
     score = 0
     if len(url) > 75:
@@ -65,23 +55,17 @@ def calculate_risk(url):
         score += 2
     return score
 
-# =========================
-# Home (Reset history)
-# =========================
+# Home (reset history)
 @app.route("/")
 def home():
     global history
-    history = []
+    history.clear()
     return render_template("index.html", history=history)
 
-# =========================
-# Prediction
-# =========================
-@app.route("/predict", methods=["GET", "POST"])
+# Predict
+@app.route("/predict", methods=["POST"])
 def predict():
-
-    if request.method == "GET":
-        return render_template("index.html", history=history)
+    global history
 
     url = request.form["url"].strip().lower()
 
@@ -113,7 +97,6 @@ def predict():
                 else:
                     result = "✅ Safe Website"
 
-    # Save history
     history.insert(0, {
         "url": url,
         "result": result,
@@ -123,15 +106,22 @@ def predict():
     if len(history) > 10:
         history.pop()
 
-    return render_template(
-        "index.html",
-        prediction_text=result,
-        confidence=confidence,
-        history=history
-    )
+    return render_template("index.html",
+                           prediction_text=result,
+                           confidence=confidence,
+                           history=history)
 
-# =========================
-# Run
-# =========================
+# Dashboard
+@app.route("/dashboard")
+def dashboard():
+    safe = sum(1 for item in history if "Safe" in item["result"])
+    phishing = sum(1 for item in history if "Phishing" in item["result"])
+    suspicious = sum(1 for item in history if "Suspicious" in item["result"])
+
+    return render_template("dashboard.html",
+                           safe=safe,
+                           phishing=phishing,
+                           suspicious=suspicious)
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True)

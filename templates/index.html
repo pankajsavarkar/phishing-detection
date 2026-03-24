@@ -15,7 +15,6 @@
             text-align: center;
         }
 
-        /* Dark overlay */
         body::before {
             content: "";
             position: fixed;
@@ -61,10 +60,6 @@
             border: 1px solid #00ffcc;
         }
 
-        input:focus {
-            box-shadow: 0 0 10px #00ffcc;
-        }
-
         button {
             padding: 12px 25px;
             margin-top: 15px;
@@ -72,18 +67,10 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
         }
 
         button:hover {
             background: #00ccaa;
-            transform: scale(1.05);
-        }
-
-        .result {
-            margin-top: 20px;
-            animation: fadeIn 1s ease-in-out;
         }
 
         table {
@@ -91,7 +78,6 @@
             width: 90%;
             margin-top: 20px;
             border-collapse: collapse;
-            animation: fadeIn 1.5s;
         }
 
         th, td {
@@ -101,10 +87,6 @@
 
         th {
             background: #003333;
-        }
-
-        tr:hover {
-            background: rgba(0,255,204,0.1);
         }
 
         .footer {
@@ -122,15 +104,18 @@
     <h1>🔐 Phishing Detection System</h1>
 
     <form action="/predict" method="POST">
-        <input type="text" name="url" placeholder="Enter website URL..." required>
+        <input type="text" name="url" placeholder="Enter URL..." required>
         <br>
         <button type="submit">Check</button>
     </form>
 
-    <div class="result">
-        <h3>{{ prediction_text }}</h3>
-        <h4>{{ confidence }}</h4>
-    </div>
+    <h3>{{ prediction_text }}</h3>
+    <h4>{{ confidence }}</h4>
+
+    <br>
+    <a href="/dashboard">
+        <button>📊 View Dashboard</button>
+    </a>
 
     <hr>
 
